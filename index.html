@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Coupon Code Login</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/daisyui@1.24.1/dist/full.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/daisyui@1.24.1/dist/full.css" rel="stylesheet">
+</head>
+
+<body class="bg-gray-800">
+
+  <!-- Login Page -->
+  <div id="login-page" class="h-screen flex justify-center items-center">
+    <div class="bg-gray-600 p-8 rounded-xl shadow-lg max-w-md w-full">
+      <h2 class="text-2xl font-bold text-center mb-4">Login</h2>
+      <input type="text" id="username" placeholder="Username" class="input input-bordered w-full mb-4" />
+
+      <input type="password" id="password" placeholder="Password" class="input input-bordered w-full mb-4" />
+      <label class="flex items-center mb-4">
+        <input type="checkbox" id="save-login" class="mr-2" />
+        <span>Save login info</span>
+      </label>
+      <button id="login-btn" class="btn btn-primary w-full">Login</button>
+      <p class="mt-4 text-center">
+        <a href="https://register.vercel.app/" class="text-blue-200 hover:underline">Signup/Register</a>
+      </p>
+    </div>
+  </div>
+
+  <!-- Coupon Codes Page -->
+  <div id="coupon-page" class="hidden p-6">
+    <h2 class="text-2xl font-bold mb-4">Available Coupon Codes</h2>
+    <div id="coupon-list" class="space-y-2">
+      <!-- Coupon list will be populated here -->
+    </div>
+    <button id="logout-btn" class="btn btn-secondary mt-4">Logout</button>
+  </div>
+
+  <script>
+    // Valid coupon codes
+    const coupons = {
+      WINNER10: 0.1,
+      FLASHSALE25: 0.25,
+      EXTRA30OFF: 0.3,
+      SUPERDISCOUNT50: 0.5,
+      MEGADEAL40: 0.4,
+      QUICK5OFF: 0.05,
+      COOLVIBES10: 0.1,
+      LUCKYDAY20: 0.2,
+      ZOOMDEAL30: 0.3,
+      POWERUP60: 0.6,
+      JUMPSTART70: 0.7,
+      SMARTBUY80: 0.8,
+      FREEDELIVERY100: 1.0,
+      FASTTRACK35: 0.35,
+      BIGSAVINGS45: 0.45,
+      NEWUSER10: 0.1,
+      RETURNING20: 0.2,
+      WEEKENDSPECIAL25: 0.25,
+      FESTIVEOFFER30: 0.3,
+      BIRTHDAYGIFT50: 0.5,
+      WHAT10: 0.1,
+      YEAHS10: 0.1,
+      OKAPIS20: 0.2,
+      AAVE20: 0.2,
+      MYFREEDEL: "free_delivery"
+    };
+
+    // DOM Elements
+    const loginPage = document.getElementById("login-page");
+    const couponPage = document.getElementById("coupon-page");
+    const couponList = document.getElementById("coupon-list");
+    const loginBtn = document.getElementById("login-btn");
+    const logoutBtn = document.getElementById("logout-btn");
+    const saveLoginCheckbox = document.getElementById("save-login");
+
+    // Check if user is already logged in (via localStorage)
+    window.onload = function () {
+      const savedUsername = localStorage.getItem("username");
+      const savedPassword = localStorage.getItem("password");
+
+      if (savedUsername && savedPassword) {
+        // If login info is saved, directly log in the user
+        document.getElementById("username").value = savedUsername;
+        document.getElementById("password").value = savedPassword;
+        login(savedUsername, savedPassword); // Call the login function
+      }
+    };
+
+    // Login Function
+    function login(username, password) {
+      fetch('https://raw.githubusercontent.com/Abdul-Ahadexpo/UserID-and-passcode/refs/heads/main/id.json')
+        .then(response => response.json())
+        .then(users => {
+          const user = users.find(user => user.username === username);
+
+          if (user) {
+            if (user.password === password) {
+              if (saveLoginCheckbox.checked) {
+                localStorage.setItem("username", username);
+                localStorage.setItem("password", password);
+              } else {
+                localStorage.removeItem("username");
+                localStorage.removeItem("password");
+              }
+
+              // Successful login
+              loginPage.classList.add("hidden");
+              couponPage.classList.remove("hidden");
+              displayCoupons();
+            } else {
+              alert("Incorrect password.");
+            }
+          } else {
+            alert("Username or password is incorrect.");
+          }
+        });
+    }
+
+    // Login Button Click Handler
+    loginBtn.addEventListener("click", function () {
+      const username = document.getElementById("username").value;
+      const password = document.getElementById("password").value;
+      login(username, password);
+    });
+
+    // Logout Button Click Handler
+    logoutBtn.addEventListener("click", function () {
+      localStorage.removeItem("username");
+      localStorage.removeItem("password");
+
+      couponPage.classList.add("hidden");
+      loginPage.classList.remove("hidden");
+    });
+
+    // Display Coupons
+    function displayCoupons() {
+      couponList.innerHTML = Object.keys(coupons).map(coupon => {
+        const discount = coupons[coupon];
+        return `
+          <div class="flex justify-between items-center p-4 border-b bg-gray-500 rounded-lg cursor-pointer" onclick="copyCouponCode('${coupon}')">
+            <span class="font-semibold">${coupon}</span>
+            <span class="text-green-500">${typeof discount === 'string' ? discount : `${(discount * 100).toFixed(0)}%`}</span>
+          </div>
+        `;
+      }).join("");
+    }
+
+    // Copy Coupon Code to Clipboard
+    function copyCouponCode(code) {
+      navigator.clipboard.writeText(code).then(function () {
+        alert(`Coupon code "${code}" copied to clipboard!`);
+      }, function (err) {
+        alert("Failed to copy coupon code.");
+      });
+    }
+  </script>
+</body>
+
+</html>
